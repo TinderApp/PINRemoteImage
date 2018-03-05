@@ -145,9 +145,8 @@ static dispatch_once_t sharedDispatchToken;
 
 + (instancetype)sharedImageManager
 {
-    dispatch_once(&sharedDispatchToken, ^{
-        sharedImageManager = [[[self class] alloc] init];
-    });
+    NSAssert(sharedImageManager != nil, @"sharedImageManager used before calling setSharedImageManagerWithConfiguration:");
+
     return sharedImageManager;
 }
 
