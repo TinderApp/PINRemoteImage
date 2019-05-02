@@ -25,6 +25,7 @@
 
 #import "NSData+ImageDetectors.h"
 #import "PINImage+DecodedImage.h"
+#import "RedirectInsecureURL.h"
 
 #define PINRemoteImageManagerDefaultTimeout  60.0
 
@@ -147,23 +148,11 @@ static dispatch_once_t sharedDispatchToken;
 + (instancetype)sharedImageManager
 {
     dispatch_once(&sharedDispatchToken, ^{
-        sharedImageManager = [[[self class] alloc] init];
+        NSURLSessionConfiguration *config = [NSURLSessionConfiguration defaultSessionConfiguration];
+        config.protocolClasses = @[[RedirectInsecureURL class]];
+        sharedImageManager = [[[self class] alloc] initWithSessionConfiguration:config];
     });
     return sharedImageManager;
-}
-
-+ (void)setSharedImageManagerWithConfiguration:(NSURLSessionConfiguration *)configuration
-{
-    NSAssert(sharedImageManager == nil, @"sharedImageManager singleton is already configured");
-
-    dispatch_once(&sharedDispatchToken, ^{
-        sharedImageManager = [[[self class] alloc] initWithSessionConfiguration:configuration];
-    });
-}
-
-- (instancetype)init
-{
-    return [self initWithSessionConfiguration:nil];
 }
 
 - (instancetype)initWithSessionConfiguration:(NSURLSessionConfiguration *)configuration

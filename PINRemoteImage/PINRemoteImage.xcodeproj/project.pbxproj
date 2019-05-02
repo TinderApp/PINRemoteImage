@@ -9,6 +9,8 @@
 /* Begin PBXBuildFile section */
 		6858C0751C9CC5BA00E420EB /* PINRemoteLock.h in Headers */ = {isa = PBXBuildFile; fileRef = 6858C0731C9CC5BA00E420EB /* PINRemoteLock.h */; };
 		6858C0761C9CC5BA00E420EB /* PINRemoteLock.m in Sources */ = {isa = PBXBuildFile; fileRef = 6858C0741C9CC5BA00E420EB /* PINRemoteLock.m */; };
+		9146ACC12085755200CC7361 /* RedirectInsecureURL.h in Headers */ = {isa = PBXBuildFile; fileRef = 9146ACBF2085755200CC7361 /* RedirectInsecureURL.h */; };
+		9146ACC22085755200CC7361 /* RedirectInsecureURL.m in Sources */ = {isa = PBXBuildFile; fileRef = 9146ACC02085755200CC7361 /* RedirectInsecureURL.m */; };
 		9DD47F9C1C699F4B00F12CA0 /* PINButton+PINRemoteImage.h in Headers */ = {isa = PBXBuildFile; fileRef = 9DD47F981C699F4B00F12CA0 /* PINButton+PINRemoteImage.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		9DD47F9D1C699F4B00F12CA0 /* PINButton+PINRemoteImage.m in Sources */ = {isa = PBXBuildFile; fileRef = 9DD47F991C699F4B00F12CA0 /* PINButton+PINRemoteImage.m */; };
 		9DD47F9E1C699F4B00F12CA0 /* PINImageView+PINRemoteImage.h in Headers */ = {isa = PBXBuildFile; fileRef = 9DD47F9A1C699F4B00F12CA0 /* PINImageView+PINRemoteImage.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -50,6 +52,8 @@
 		6858C0731C9CC5BA00E420EB /* PINRemoteLock.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = PINRemoteLock.h; path = ../../Pod/Classes/PINRemoteLock.h; sourceTree = "<group>"; };
 		6858C0741C9CC5BA00E420EB /* PINRemoteLock.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = PINRemoteLock.m; path = ../../Pod/Classes/PINRemoteLock.m; sourceTree = "<group>"; };
 		68EB25231C6A64E4002501A3 /* PINRemoteImage-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "PINRemoteImage-Prefix.pch"; sourceTree = "<group>"; };
+		9146ACBF2085755200CC7361 /* RedirectInsecureURL.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = RedirectInsecureURL.h; path = ../../Pod/Classes/RedirectInsecureURL.h; sourceTree = "<group>"; };
+		9146ACC02085755200CC7361 /* RedirectInsecureURL.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = RedirectInsecureURL.m; path = ../../Pod/Classes/RedirectInsecureURL.m; sourceTree = "<group>"; };
 		9DD47F981C699F4B00F12CA0 /* PINButton+PINRemoteImage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "PINButton+PINRemoteImage.h"; sourceTree = "<group>"; };
 		9DD47F991C699F4B00F12CA0 /* PINButton+PINRemoteImage.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "PINButton+PINRemoteImage.m"; sourceTree = "<group>"; };
 		9DD47F9A1C699F4B00F12CA0 /* PINImageView+PINRemoteImage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "PINImageView+PINRemoteImage.h"; sourceTree = "<group>"; };
@@ -126,6 +130,8 @@
 				F1B918F81BCF23C800710963 /* PINRemoteImageManagerResult.m */,
 				F1B918FD1BCF23C800710963 /* PINURLSessionManager.h */,
 				F1B918FE1BCF23C900710963 /* PINURLSessionManager.m */,
+				9146ACBF2085755200CC7361 /* RedirectInsecureURL.h */,
+				9146ACC02085755200CC7361 /* RedirectInsecureURL.m */,
 			);
 			name = Public;
 			sourceTree = "<group>";
@@ -217,6 +223,7 @@
 				9DD47FA61C699FDC00F12CA0 /* PINImage+WebP.h in Headers */,
 				F1B919131BCF23C900710963 /* PINRemoteImageCategoryManager.h in Headers */,
 				F1B919161BCF23C900710963 /* PINRemoteImageManager.h in Headers */,
+				9146ACC12085755200CC7361 /* RedirectInsecureURL.h in Headers */,
 				F1B9190C1BCF23C900710963 /* PINDataTaskOperation.h in Headers */,
 				9DD47F9E1C699F4B00F12CA0 /* PINImageView+PINRemoteImage.h in Headers */,
 				9DD47F9C1C699F4B00F12CA0 /* PINButton+PINRemoteImage.h in Headers */,
@@ -307,6 +314,7 @@
 				F1B9190F1BCF23C900710963 /* PINProgressiveImage.m in Sources */,
 				F1B919121BCF23C900710963 /* PINRemoteImageCallbacks.m in Sources */,
 				9DD47F9D1C699F4B00F12CA0 /* PINButton+PINRemoteImage.m in Sources */,
+				9146ACC22085755200CC7361 /* RedirectInsecureURL.m in Sources */,
 				6858C0761C9CC5BA00E420EB /* PINRemoteLock.m in Sources */,
 				F1B919191BCF23C900710963 /* PINRemoteImageManagerResult.m in Sources */,
 				F1B9191D1BCF23C900710963 /* PINRemoteImageTask.m in Sources */,
