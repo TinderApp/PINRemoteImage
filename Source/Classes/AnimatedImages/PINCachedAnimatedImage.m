@@ -14,10 +14,14 @@
 #import "PINWebPAnimatedImage.h"
 #endif
 
+#if BAZEL
+#import "PINOperation/Source/PINOperation.h"
+#else
 #if SWIFT_PACKAGE
 @import PINOperation;
 #else
 #import <PINOperation/PINOperation.h>
+#endif
 #endif
 
 #import "NSData+ImageDetectors.h"
@@ -36,7 +40,7 @@ static const CFTimeInterval kSecondsBetweenMemoryWarnings = 15;
 {
     // Since _animatedImage is set on init it is thread-safe.
     id <PINAnimatedImage> _animatedImage;
-    
+
     PINImage *_coverImage;
     PINAnimatedImageInfoReady _coverImageReadyCallback;
     dispatch_block_t _playbackReadyCallback;
@@ -45,7 +49,7 @@ static const CFTimeInterval kSecondsBetweenMemoryWarnings = 15;
     BOOL _playbackReady;
     PINOperationQueue *_operationQueue;
     dispatch_queue_t _cachingQueue;
-    
+
     NSUInteger _playhead;
     BOOL _notifyOnReady;
     NSMutableIndexSet *_cachedOrCachingFrames;
@@ -85,7 +89,7 @@ static const CFTimeInterval kSecondsBetweenMemoryWarnings = 15;
         _notifyOnReady = YES;
         _cachedOrCachingFrames = [[NSMutableIndexSet alloc] init];
         _lock = [[PINRemoteLock alloc] initWithName:@"PINCachedAnimatedImage Lock"];
-        
+
 #if PIN_TARGET_IOS
         _lastMemoryWarning = [NSDate distantPast];
         [[NSNotificationCenter defaultCenter] addObserver:self
@@ -93,10 +97,10 @@ static const CFTimeInterval kSecondsBetweenMemoryWarnings = 15;
                                                      name:UIApplicationDidReceiveMemoryWarningNotification
                                                    object:nil];
 #endif
-        
+
         _operationQueue = [[PINOperationQueue alloc] initWithMaxConcurrentOperations:kFramesToRenderForLargeFrames];
         _cachingQueue = dispatch_queue_create("Caching Queue", DISPATCH_QUEUE_SERIAL);
-        
+
         // dispatch later so that blocks can be set after init this runloop
         PINWeakify(self);
         dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
@@ -224,7 +228,7 @@ static const CFTimeInterval kSecondsBetweenMemoryWarnings = 15;
         // Reset cache cleared flag if it's been set.
         self->_cacheCleared = NO;
         imageRef = (__bridge CGImageRef)[self->_frameCache objectForKey:@(index)];
-        
+
         self->_playhead = index;
         if (imageRef == NULL) {
             if ([self framesToCache] == 0) {
@@ -235,7 +239,7 @@ static const CFTimeInterval kSecondsBetweenMemoryWarnings = 15;
                 self->_notifyOnReady = YES;
             }
         }
-        
+
         // Retain and autorelease while we have the lock, another thread could remove it from the cache
         // and allow it to be released.
         if (imageRef) {
@@ -243,7 +247,7 @@ static const CFTimeInterval kSecondsBetweenMemoryWarnings = 15;
             CFAutorelease(imageRef);
         }
     }];
-    
+
     if (cachingDisabled && imageRef == NULL) {
         imageRef = [_animatedImage imageAtIndex:index cacheProvider:self];
     } else {
@@ -292,7 +296,7 @@ static const CFTimeInterval kSecondsBetweenMemoryWarnings = 15;
             [self _updateCacheOnQueue];
         }];
     }
-    
+
     [_operationQueue scheduleOperation:^{
         PINStrongify(self);
         [self cleanupFrames];
@@ -303,9 +307,9 @@ static const CFTimeInterval kSecondsBetweenMemoryWarnings = 15;
 {
     __block NSRange endKeepRange;
     __block NSRange beginningKeepRange;
-    
+
     NSUInteger framesToCache = [self framesToCache];
-    
+
     [self->_lock lockWithBlock:^{
         // find the range of frames we want to keep
         endKeepRange = NSMakeRange(self->_playhead, framesToCache);
@@ -315,7 +319,7 @@ static const CFTimeInterval kSecondsBetweenMemoryWarnings = 15;
             endKeepRange.length = self->_animatedImage.frameCount - self->_playhead;
         }
     }];
-    
+
     if (endKeepRangeIn) {
         *endKeepRangeIn = endKeepRange;
     }
@@ -329,7 +333,7 @@ static const CFTimeInterval kSecondsBetweenMemoryWarnings = 15;
     NSRange endKeepRange;
     NSRange beginningKeepRange;
     [self getKeepRanges:&endKeepRange beginningKeepRange:&beginningKeepRange];
-    
+
     [_lock lockWithBlock:^{
         NSMutableIndexSet *removedFrames = [[NSMutableIndexSet alloc] init];
         PINLog(@"Checking if frames need removing: %lu", _cachedOrCachingFrames.count);
@@ -394,7 +398,7 @@ static const CFTimeInterval kSecondsBetweenMemoryWarnings = 15;
         PINLog(@"Requesting: %lu", (unsigned long)frameIndex);
         [_cachedOrCachingFrames addIndex:frameIndex];
         _frameRenderCount++;
-        
+
         PINWeakify(self);
         dispatch_async(_cachingQueue, ^{
             PINStrongify(self);
@@ -408,7 +412,7 @@ static const CFTimeInterval kSecondsBetweenMemoryWarnings = 15;
 {
     unsigned long long totalBytes = [NSProcessInfo processInfo].physicalMemory;
     NSUInteger framesToCache = 0;
-    
+
     NSUInteger frameCost = _animatedImage.bytesPerFrame;
     if (frameCost * _animatedImage.frameCount < totalBytes / 250) {
         // If the total number of bytes takes up less than a 250th of total memory, lets just cache 'em all.
@@ -423,7 +427,7 @@ static const CFTimeInterval kSecondsBetweenMemoryWarnings = 15;
         // No caching :(
         framesToCache = 0;
     }
-    
+
     // If it's been less than 5 seconds, we're not caching
     CFTimeInterval timeSinceLastWarning = -[self.lastMemoryWarning timeIntervalSinceNow];
     if (self.cachingFramesCausingMemoryWarnings || timeSinceLastWarning < kSecondsAfterMemWarningToMinimumCache) {
@@ -433,7 +437,7 @@ static const CFTimeInterval kSecondsBetweenMemoryWarnings = 15;
     } else if (timeSinceLastWarning < kSecondsAfterMemWarningToAllCache) {
         framesToCache = MIN(framesToCache, kFramesToRenderForLargeFrames);
     }
-    
+
     return framesToCache;
 }
 

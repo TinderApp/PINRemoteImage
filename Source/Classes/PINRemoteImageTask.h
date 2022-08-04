@@ -8,10 +8,14 @@
 
 #import <Foundation/Foundation.h>
 
+#if BAZEL
+#import "PINOperation/Source/PINOperation.h"
+#else
 #if SWIFT_PACKAGE
 @import PINOperation;
 #else
 #import <PINOperation/PINOperation.h>
+#endif
 #endif
 
 #import "PINRemoteImageCallbacks.h"
