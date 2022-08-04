@@ -6,10 +6,14 @@
 //
 //
 
+#if BAZEL
+#import "PINCache/Source/PINCache.h"
+#else
 #if SWIFT_PACKAGE
 @import PINCache;
 #else
 #import <PINCache/PINCache.h>
+#endif
 #endif
 
 #import "PINRemoteImageCaching.h"
