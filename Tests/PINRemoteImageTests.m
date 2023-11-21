@@ -66,7 +66,6 @@ static inline BOOL PINImageAlphaInfoIsOpaque(CGImageAlphaInfo info) {
 
 @end
 
-
 #if DEBUG
 
 @interface PINRemoteImageWeakTask : NSObject
@@ -388,21 +387,27 @@ static inline BOOL PINImageAlphaInfoIsOpaque(CGImageAlphaInfo info) {
 
 - (void)testImageRequestIgnoresLocalData
 {
-    XCTestExpectation *expectation = [self expectationWithDescription:@"Verify cache policy of request"];
+    XCTestExpectation *cacheExpectation = [self expectationWithDescription:@"Verify cache policy of request"];
+    XCTestExpectation *setRequestConfigExpectation = [self expectationWithDescription:@"Verify request configuration is set"];
     
     self.imageManager = [[PINRemoteImageManager alloc] initWithSessionConfiguration:nil];
     self.imageManager.sessionManager.delegate = self;
-    
+
     [self.imageManager setRequestConfiguration:^NSURLRequest * _Nonnull(NSURLRequest * _Nonnull request) {
         XCTAssertEqual(request.cachePolicy, NSURLRequestReloadIgnoringLocalCacheData);
-        [expectation fulfill];
+        [cacheExpectation fulfill];
         return request;
+    } completion:^{
+        [setRequestConfigExpectation fulfill];
     }];
-  
+
+    [self waitForExpectations:@[setRequestConfigExpectation] timeout:[self timeoutTimeInterval]];
+
     [self.imageManager downloadImageWithURL:[self headersURL]
                                     options:PINRemoteImageManagerDownloadOptionsIgnoreCache
                                  completion:nil];
-    [self waitForExpectationsWithTimeout:[self timeoutTimeInterval] handler:nil];
+
+    [self waitForExpectations:@[cacheExpectation] timeout:[self timeoutTimeInterval]];
 }
 
 - (void)testRequestConfigurationIsUsedForImageRequest
@@ -814,9 +819,19 @@ static inline BOOL PINImageAlphaInfoIsOpaque(CGImageAlphaInfo info) {
     NSString *cachePath = [NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES) firstObject];
   
     PINDiskCache *tempDiskCache = [[PINDiskCache alloc] initWithName:kPINRemoteImageDiskCacheName rootPath:cachePath serializer:^NSData * _Nonnull(id<NSCoding>  _Nonnull object, NSString * _Nonnull key) {
-        return [NSKeyedArchiver archivedDataWithRootObject:object];
+        if (@available(iOS 11.0, macOS 10.13, tvOS 11.0, watchOS 4.0, *)) {
+            return [NSKeyedArchiver archivedDataWithRootObject:object requiringSecureCoding:NO error:nil];
+        } else {
+            return [NSKeyedArchiver archivedDataWithRootObject:object];
+        }
     } deserializer:^id<NSCoding> _Nonnull(NSData * _Nonnull data, NSString * _Nonnull key) {
-        return [NSKeyedUnarchiver unarchiveObjectWithData:data];
+        if (@available(iOS 11.0, macOS 10.13, tvOS 11.0, watchOS 4.0, *)) {
+            NSKeyedUnarchiver *unarchiver = [[NSKeyedUnarchiver alloc] initForReadingFromData:data error:nil];
+            unarchiver.requiresSecureCoding = NO;
+            return [unarchiver decodeObjectForKey:NSKeyedArchiveRootObjectKey];
+        } else {
+            return [NSKeyedUnarchiver unarchiveObjectWithData:data];
+        }
     }];
     
     [tempDiskCache setObject:@"invalid" forKey:[self.imageManager cacheKeyForURL:[self JPEGURL] processorKey:nil]];

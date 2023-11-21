@@ -133,7 +133,6 @@ typedef void (^PINRemoteImageManagerDataCompletion)(NSData *data, NSURLResponse 
   PINAlternateRepresentationProvider *_defaultAlternateRepresentationProvider;
   __weak PINAlternateRepresentationProvider *_alternateRepProvider;
   NSURLSessionConfiguration *_sessionConfiguration;
-
 }
 
 @property (nonatomic, strong) id<PINRemoteImageCaching> cache;
@@ -158,6 +157,7 @@ typedef void (^PINRemoteImageManagerDataCompletion)(NSData *data, NSURLResponse 
 @property (nonatomic, strong) NSMutableDictionary <NSString *, NSString *> *httpHeaderFields;
 @property (nonatomic, readonly) BOOL diskCacheTTLIsEnabled;
 @property (nonatomic, readonly) BOOL memoryCacheTTLIsEnabled;
+
 #if DEBUG
 @property (nonatomic, assign) NSUInteger totalDownloads;
 #endif
@@ -328,12 +328,24 @@ static dispatch_once_t sharedDispatchToken;
     PINCache *pinCache = [[PINCache alloc] initWithName:kPINRemoteImageDiskCacheName rootPath:cacheURLRoot serializer:^NSData * _Nonnull(id<NSCoding>  _Nonnull object, NSString * _Nonnull key) {
         id <NSCoding, NSObject> obj = (id <NSCoding, NSObject>)object;
         if ([key hasPrefix:PINRemoteImageCacheKeyResumePrefix]) {
-            return [NSKeyedArchiver archivedDataWithRootObject:obj];
+            if (@available(iOS 11.0, macOS 10.13, tvOS 11.0, watchOS 4.0, *)) {
+                return [NSKeyedArchiver archivedDataWithRootObject:obj requiringSecureCoding:NO error:nil];
+            } else {
+                return [NSKeyedArchiver archivedDataWithRootObject:object];
+            }
         }
         return (NSData *)object;
     } deserializer:^id<NSCoding> _Nonnull(NSData * _Nonnull data, NSString * _Nonnull key) {
         if ([key hasPrefix:PINRemoteImageCacheKeyResumePrefix]) {
-            return [NSKeyedUnarchiver unarchiveObjectWithData:data];
+            if (@available(iOS 11.0, macOS 10.13, tvOS 11.0, watchOS 4.0, *)) {
+                NSError *error = nil;
+                NSKeyedUnarchiver *unarchiver = [[NSKeyedUnarchiver alloc] initForReadingFromData:data error:&error];
+                NSAssert(!error, @"unarchiver init failed with error");
+                unarchiver.requiresSecureCoding = NO;
+                return [unarchiver decodeObjectForKey:NSKeyedArchiveRootObjectKey];
+            } else {
+                return [NSKeyedUnarchiver unarchiveObjectWithData:data];
+            }
         }
         return data;
     } keyEncoder:nil keyDecoder:nil ttlCache:enableTtl];
@@ -373,14 +385,23 @@ static dispatch_once_t sharedDispatchToken;
     });
 }
 
-- (void)setRequestConfiguration:(PINRemoteImageManagerRequestConfigurationHandler)configurationBlock {
+- (void)setRequestConfiguration:(PINRemoteImageManagerRequestConfigurationHandler)configurationBlock
+                     completion:(void (^)(void))completion; {
     __weak typeof(self) weakSelf = self;
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         typeof(self) strongSelf = weakSelf;
         [strongSelf lock];
-            strongSelf.requestConfigurationHandler = configurationBlock;
+        strongSelf.requestConfigurationHandler = configurationBlock;
         [strongSelf unlock];
+
+        if(completion != nil) {
+            completion();
+        }
     });
+}
+
+- (void)setRequestConfiguration:(PINRemoteImageManagerRequestConfigurationHandler)configurationBlock {
+    [self setRequestConfiguration:configurationBlock completion:nil];
 }
 
 - (void)setAuthenticationChallenge:(PINRemoteImageManagerAuthenticationChallenge)challengeBlock {
